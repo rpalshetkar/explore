@@ -1,0 +1,6 @@
+kind: Driver
+ns: production
+protocol: service,agent
+supports: service,agent,command,browser,scheduler,python call
+uri: str
+payload: str

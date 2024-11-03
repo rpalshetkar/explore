@@ -1,0 +1,19 @@
+kind: DS
+protocol: str
+uri: str
+acl: str
+callable: Callable
+memory:
+  kind: PandasDS
+http:
+  kind: HttpDS
+mongo:
+  kind: MongoDS
+  tables: droplets,trades,legs,events,orders,measures,positions,ticks,logs
+txf:
+  kind: TxfDS
+  tables: xEnum,xBow,xFunding,xPeople
+file:
+  kind: FileDS
+  path: /Users/john/xds/data/file.xls
+  tables: xEnum,xBow,xFunding,xPeople

@@ -1,0 +1,16 @@
+kind: Widget
+ds: DS
+title: I am the widget
+type: table
+x: Fields or X axis columns
+y: Numbers/Values or Y axis columns
+c: Colored Categories, Aggregation overlays
+zx: X axis categories for Chart Grids
+zy: Y axis categories for Chart Grids
+theme: rrp
+bar:
+  kind: Bar
+  x: X Axis Column
+  y: Y Axis Column
+  c: Colored Categories
+  total: True

@@ -1,0 +1,10 @@
+{
+  "python.analysis.extraPaths": ["./xds/core"],
+  "python.testing.pytestArgs": ["."],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "editor.fontFamily": "Monaco, Menlo, 'Courier New', monospace",
+  "scm.inputFontSize": 10,
+  "scm.inputFontFamily": "10",
+  "terminal.integrated.fontSize": 10
+}

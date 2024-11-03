@@ -1,0 +1,4 @@
+kind: Enumeration
+ns: accoutable
+values: RP,AP,TP
+uri: xds://xbow?x=accountable

@@ -1,0 +1,92 @@
+def cls2py_old(self, cls_id: str) -> str:
+    cls = self.classes.get(cls_id.lower())
+    if cls is None:
+        raise ValueError(f'Class {cls_id} not found.')
+
+    fields = attr.fields(cls)
+    ic(fields)
+    ic(self.classes)
+
+    class_string = '\n@attr.s\n'
+    class_string += f'class {cls_id}:\n'
+
+    nested_fields = {}
+    prefix = '    '
+    for attr_value in fields:
+        attr_type = attr_value.type
+        name = attr_value.name
+        if name in self.classes:
+            nested_fields[f'{cls_id}.{name}'] = attr.fields(attr_type)
+        if name == 'kind':
+            class_string += f'{prefix}{name}: str = "{cls_id}"\n'
+        elif hasattr(attr_type, '__name__'):
+            class_string += f'{prefix}{name}: {attr_type.__name__}\n'
+        else:
+            class_string += f'{prefix}{name}: {attr_type}\n'
+    ic(nested_fields)
+    class_string += '\n'
+    init_string = f'\n{prefix}def __init__(self, **kwargs):\n'
+    prefix = prefix * 2
+    for attr_value in fields:
+        name = attr_value.name
+        if name == 'kind':
+            continue
+        if attr_value.type in self.classes.values():
+            _ = self.cls2py(name)
+            nfields = nested_fields[f'{cls_id}.{name}']
+            init_string += (
+                '\n'.join(
+                    [
+                        f'{prefix}self.{name}.{fld.name} = kwargs.get("{name}.{fld.name}", None)'
+                        for fld in nfields
+                    ]
+                )
+                + '\n'
+            )
+        else:
+            init_string += f'{prefix}self.{name} = kwargs.get("{name}", None)\n'
+
+    class_string += init_string
+    self.py[cls_id.lower()] = class_string
+    print(class_string)
+    return class_string
+
+
+
+def _from_spec(self, spec: Dict[str, Any], class_name: str) -> Any:
+    class_attrs = {}
+    for field, field_spec in spec.items():
+        if isinstance(field_spec, dict) and 'type' in field_spec:
+            field_type = field_spec['type']
+            is_optional = field_spec.get('optional', False)
+
+            if field_type == 'object':
+                if 'kind' in field_spec:
+                    nested_class = self._from_spec(
+                        field_spec['properties'], field_spec['kind']
+                    )
+                else:
+                    nested_class = self._from_spec(
+                        field_spec['properties'], f'{class_name}_{field}'
+                    )
+                attr_type = Optional[nested_class] if is_optional else nested_class
+            else:
+                attr_type = {
+                    'str': str,
+                    'int': int,
+                    'float': float,
+                    'bool': bool,
+                    'list': list,
+                    'dict': dict,
+                }.get(field_type, Any)
+
+                if is_optional:
+                    attr_type = Optional[attr_type]
+
+            class_attrs[field] = attr.ib(
+                type=attr_type, default=None if is_optional else attr.NOTHING
+            )
+        else:
+            class_attrs[field] = attr.ib(type=Any)
+
+    return attr.make_class(class_name, class_attrs)
