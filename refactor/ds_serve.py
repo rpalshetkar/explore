@@ -74,7 +74,9 @@ def main():
         description=generate_help_from_schema(),
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument('--yaml_file', help='Path to YAML file with DS parameters')
+    parser.add_argument(
+        '--yaml_file', help='Path to YAML file with DS parameters'
+    )
 
     # Add arguments based on DSSchema
     for field in attr.fields(DSSchema):
@@ -88,7 +90,9 @@ def main():
     else:
         # Create a dictionary from command-line arguments
         params = {
-            k: v for k, v in vars(args).items() if v is not None and k != 'yaml_file'
+            k: v
+            for k, v in vars(args).items()
+            if v is not None and k != 'yaml_file'
         }
         yaml_params = yaml.dump(params)
 

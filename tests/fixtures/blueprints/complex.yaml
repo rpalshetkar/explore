@@ -1,0 +1,43 @@
+kind: Company
+id: "company_001"
+name: "Tech Innovations Inc."
+location:
+  kind: Location
+  address:
+    kind: Address
+    street: "123 Tech Lane"
+    city: "Silicon Valley"
+    state: "CA"
+    zip: "94043"
+  headquarters: true
+departments:
+  - name: "Engineering"
+    kind: Department
+    employees:
+      - id: "emp_001"
+        name: "Alice Johnson"
+        role: "Software Engineer"
+        skills:
+          - name: "Python"
+            kind: Skill
+            level: "Expert"
+        campaigns:
+          - name: "Product Launch"
+            kind: Campaign
+            budget: 50000
+            duration: "3 months"
+projects:
+  - name: "Project Alpha"
+    kind: Project
+    status: "In Progress"
+    team:
+      - "emp_001"
+      - "emp_002"
+    milestones:
+      - name: "Initial Development"
+        kind: Milestone
+        due_date: "2023-12-01"
+        completed: false
+      - name: "Beta Release"
+        due_date: "2024-03-01"
+        completed: false

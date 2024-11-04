@@ -1,8 +1,0 @@
-kind: Registry
-from: xds/catalogue/models
-classes:
-  - env
-  - enumeration
-  - callable
-  - ds
-  - widget

@@ -1,0 +1,18 @@
+kind: Student
+sid: "12345"
+email: "jon@example.com"
+profile:
+  kind: Profile
+  first_name: "Jon"
+  last_name: "Doe"
+  age: 20
+  hobbies:
+    - name: "Basketball"
+      kind: Hobby
+      since: 2019
+    - name: "Video Games"
+      kind: Hobby
+      since: 2021
+    - name: "Photography"
+      kind: Hobby
+      since: 2022

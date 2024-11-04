@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 import seaborn as sns
 from jinja2 import Environment, Template
 
-from .utils import io_stream, is_pivot, read_yaml
+from xds.utils.helpers import io_stream, is_pivot, read_yaml
 
 if TYPE_CHECKING:
     from pandas.io.formats.style import Styler
@@ -20,12 +20,20 @@ if TYPE_CHECKING:
     from .ds import DS
 
 
-class View:
-    def __init__(self, report_spec: str, ds: DS):
-        self.spec: Dict[str, Any] = read_yaml(report_spec)
-        self.df: pd.DataFrame = ds.df_humanized
-        self.jenv: Environment = Environment()
+class Widget:
+    def __init__(self, **kwargs: Any) -> None:
+        self.create(**kwargs)
+
+    @classmethod
+    def create(cls, **kwargs: Any) -> Widget:
+        report_spec = kwargs.get('report_spec')
+        ds = kwargs.get('ds')
+        instance = cls.__new__(cls)
+        instance.spec = read_yaml(report_spec)
+        instance.df = ds.df_humanized
+        instance.jenv = Environment()
         sns.set_theme(style='darkgrid')
+        return instance
 
     def render(self, jtmpl: str) -> str:
         layout = 'layout'
@@ -40,7 +48,9 @@ class View:
         for k, v in items:
             if self.spec.get(k):
                 elements[k] = {
-                    name: v(spc) for name, spc in self.spec[k].items() if name in names
+                    name: v(spc)
+                    for name, spc in self.spec[k].items()
+                    if name in names
                 }
 
         to_style: Dict[str, pd.DataFrame] = {
@@ -48,7 +58,8 @@ class View:
             **elements.get('tables', {}),
         }
         styled_data = {
-            name: self.df_style(data).to_html() for name, data in to_style.items()
+            name: self.df_style(data).to_html()
+            for name, data in to_style.items()
         }
 
         return template.render(
@@ -80,7 +91,14 @@ class View:
             'template': 'plotly_white',
         }
         chart_type = spec['type']
-        if chart_type not in ['sankey', 'line', 'bar', 'heatmap', 'gantt', 'histogram']:
+        if chart_type not in [
+            'sankey',
+            'line',
+            'bar',
+            'heatmap',
+            'gantt',
+            'histogram',
+        ]:
             return None
 
         """
@@ -123,7 +141,9 @@ class View:
                 'text': spec['show'],
             }
         elif chart_type == 'histogram':
-            bins = pd.date_range(start='2023-01-01', end='2024-02-01', freq='1M')
+            bins = pd.date_range(
+                start='2023-01-01', end='2024-02-01', freq='1M'
+            )
             self.df['Bin'] = pd.cut(self.df[spec['x']], bins=bins)
             cols = [spec['x'], spec['z']]
             result = self.df.groupby(cols, as_index=False)[spec['y']].sum()
@@ -182,7 +202,9 @@ class View:
                 raise ValueError(f"Column '{level}' not found in DataFrame")
 
         if value_col not in df.columns:
-            raise ValueError(f"Value column '{value_col}' not found in DataFrame")
+            raise ValueError(
+                f"Value column '{value_col}' not found in DataFrame"
+            )
 
         agg_dfs = []
         for i in range(len(levels)):
@@ -219,8 +241,12 @@ class View:
                 incoming_flows[t].append((labels[s], v))
 
             for i in range(len(labels)):
-                in_text = '<br>'.join([f'From {s}: {v}' for s, v in incoming_flows[i]])
-                out_text = '<br>'.join([f'To {t}: {v}' for t, v in outgoing_flows[i]])
+                in_text = '<br>'.join(
+                    [f'From {s}: {v}' for s, v in incoming_flows[i]]
+                )
+                out_text = '<br>'.join(
+                    [f'To {t}: {v}' for t, v in outgoing_flows[i]]
+                )
                 hover_text = f'{labels[i]}<br><br>Incoming:<br>{in_text}<br><br>Outgoing:<br>{out_text}'
                 node_hover_text.append(hover_text)
             return node_hover_text
@@ -228,7 +254,9 @@ class View:
         def generate_colors(num_colors):
             colors = plt.cm.get_cmap('Set3', num_colors)
             return [
-                'rgba({}, {}, {}, 0.8)'.format(int(r * 255), int(g * 255), int(b * 255))
+                'rgba({}, {}, {}, 0.8)'.format(
+                    int(r * 255), int(g * 255), int(b * 255)
+                )
                 for r, g, b, _ in colors(np.linspace(0, 1, num_colors))
             ]
 
@@ -409,7 +437,10 @@ class View:
             'padding': '0px 20px 0px 0px',
         }
         table_styles: List[Dict[str, Any]] = [
-            {'selector': 'td:hover', 'props': [('background-color', '#EFEFE0')]},
+            {
+                'selector': 'td:hover',
+                'props': [('background-color', '#EFEFE0')],
+            },
             {
                 'selector': '.index_name',
                 'props': [

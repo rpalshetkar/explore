@@ -1,0 +1,74 @@
+kind: Company
+id: "company_001"
+name: "Tech Innovations Inc."
+location:
+  address:
+    street: "123 Tech Lane"
+    city: "Silicon Valley"
+    state: "CA"
+    zip: "94043"
+  headquarters: true
+departments:
+  - name: "Engineering"
+    employees:
+      - id: "emp_001"
+        name: "Alice Johnson"
+        role: "Software Engineer"
+        skills:
+          - name: "Python"
+            level: "Expert"
+          - name: "JavaScript"
+            level: "Intermediate"
+        campaigns:
+          - name: "Product Launch"
+            budget: 50000
+            duration: "3 months"
+          - name: "Social Media Campaign"
+            budget: 20000
+            duration: "1 month"
+      - id: "emp_002"
+        name: "Bob Smith"
+        role: "DevOps Engineer"
+        skills:
+          - name: "AWS"
+            level: "Expert"
+          - name: "Docker"
+            level: "Advanced"
+  - name: "Marketing"
+    employees:
+      - id: "emp_003"
+        name: "Charlie Brown"
+        role: "Marketing Manager"
+      - id: "emp_004"
+        name: "Diana Prince"
+        role: "Content Strategist"
+        skills:
+          - name: "SEO"
+            level: "Expert"
+          - name: "Content Writing"
+            level: "Advanced"
+projects:
+  - name: "Project Alpha"
+    status: "In Progress"
+    team:
+      - "emp_001"
+      - "emp_002"
+    milestones:
+      - name: "Initial Development"
+        due_date: "2023-12-01"
+        completed: false
+      - name: "Beta Release"
+        due_date: "2024-03-01"
+        completed: false
+  - name: "Project Beta"
+    status: "Completed"
+    team:
+      - "emp_003"
+      - "emp_004"
+    milestones:
+      - name: "Research Phase"
+        due_date: "2023-06-01"
+        completed: true
+      - name: "Final Report"
+        due_date: "2023-09-01"
+        completed: true

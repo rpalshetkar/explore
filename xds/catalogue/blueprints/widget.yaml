@@ -1,4 +1,5 @@
 kind: Widget
+proxy: WidgetProxy
 ds: DS
 title: I am the widget
 type: table
@@ -9,8 +10,9 @@ zx: X axis categories for Chart Grids
 zy: Y axis categories for Chart Grids
 theme: rrp
 bar:
-  kind: Bar
+  kind: BarChart
   x: X Axis Column
   y: Y Axis Column
   c: Colored Categories
   total: True
+  orientation: vertical

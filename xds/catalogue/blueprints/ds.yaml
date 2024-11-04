@@ -1,8 +1,11 @@
 kind: DS
-protocol: str
-uri: str
-acl: str
-callable: Callable
+proxy: DSProxy
+ns: str#req
+context: kw
+uri: str=txf://xbow
+acl: str=ro
+callable:
+  kind: Callable
 memory:
   kind: PandasDS
 http:

@@ -1,0 +1,4 @@
+kind: B
+ns: NSB#/req
+a: xref=A
+ax: xref=A

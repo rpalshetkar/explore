@@ -1,0 +1,13 @@
+kind: Nested
+na:
+  kind: ClassA
+  name: a
+  value: b
+  nb:
+    kind: ClassB
+    name: r
+    value: s
+    nc:
+      kind: ClassC
+      name: t
+      value: u

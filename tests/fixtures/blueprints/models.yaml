@@ -1,0 +1,10 @@
+xds:
+  kind: Query
+  ns: str
+  proxy: ClassProxy
+  protocol: str
+  uri: str
+xds_ex:
+  kind: Query
+  ns: bow
+  uri: txf://xbow

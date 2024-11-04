@@ -1,0 +1,8 @@
+kind: XDS
+ns: prod#req
+context: kw
+protocol: str#in=service,agent,function,command,browser,scheduler
+uri: str
+env: xref=Env
+ds: xref=DS
+widget: xref=Widget

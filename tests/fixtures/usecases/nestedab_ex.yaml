@@ -1,0 +1,6 @@
+kind: B
+ns: B/b
+a:
+  ns: A/ba
+ax:
+  ns: A/bax

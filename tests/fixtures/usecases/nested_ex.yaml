@@ -1,0 +1,13 @@
+kind: Nested
+na:
+  kind: ClassA
+  name: 1apple
+  value: 1banana
+  nb:
+    kind: ClassB
+    name: 2orange
+    value: 2lemon
+    nc:
+      kind: ClassC
+      name: 3tangerine
+      value: 3mango

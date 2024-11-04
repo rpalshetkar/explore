@@ -1,10 +1,30 @@
 {
-  "python.analysis.extraPaths": ["./xds/core"],
-  "python.testing.pytestArgs": ["."],
-  "python.testing.unittestEnabled": false,
+  "ruff.organizeImports": true,
+  "ruff.fixAll": true,
+  "ruff.lint.enable": true,
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "python.testing.unittestArgs": [
+    "-v",
+    "-s",
+    "./src",
+    "-p",
+    "test*.py"
+  ],
   "python.testing.pytestEnabled": true,
-  "editor.fontFamily": "Monaco, Menlo, 'Courier New', monospace",
-  "scm.inputFontSize": 10,
-  "scm.inputFontFamily": "10",
-  "terminal.integrated.fontSize": 10
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "workbench.colorCustomizations": {
+    "tree.indentGuidesStroke": "#008070"
+  },
+  "workbench.tree.indent": 18,
 }

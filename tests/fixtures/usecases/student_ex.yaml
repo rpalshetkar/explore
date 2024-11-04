@@ -1,0 +1,7 @@
+kind: Student
+sid: S12345
+email: student@example.com
+profile:
+  kind: Profile
+  first_name: John
+  last_name: Doe

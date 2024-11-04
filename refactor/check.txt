@@ -90,3 +90,55 @@ def _from_spec(self, spec: Dict[str, Any], class_name: str) -> Any:
             class_attrs[field] = attr.ib(type=Any)
 
     return attr.make_class(class_name, class_attrs)
+
+
+    def _cls2py(self, cls_id: str) -> str:
+        # TODO: To create strong statically typed classes
+        # TODO: Need to discuss better way to have members defined in yaml but
+        # TODO: concrete implementations in concrete classes. Like DS members defined in yaml
+        # TODO: but members/methods more unique processing in DS classes
+        # TODO: Separate data model from logical extension to the class
+        # TODO: This is not perfect. Recursive multiple levels doesn't work. Just two
+        # TODO: levels of generation works especially for __init__ function
+        # TODO: Need to figure out better way
+        self.py_jtmpl = io_stream(Path('xds/catalogue/templates/classgen.jinja2'))
+        cls = self.classes.get(cls_id)
+        if cls is None:
+            raise ValueError(f'Class {cls_id} not found.')
+
+        fields = attr.fields(cls)
+        ic(fields)
+        fields_data = [
+            self._extract_field_info(attr_value, cls_id) for attr_value in fields
+        ]
+
+        for field in fields_data:
+            if field['is_nested']:
+                field['subfields'] = self._get_subfields(field['type'])
+
+        py_tmpl = Template(self.py_jtmpl)
+        rendered_code = py_tmpl.render(cls_id=cls_id, fields=fields_data)
+        self.py[cls_id] = rendered_code
+        return rendered_code
+
+    def _get_subfields(self, attr_type) -> List[Dict[str, Any]]:
+        subfields_data = [
+            self._extract_field_info(sub_attr) for sub_attr in attr.fields(attr_type)
+        ]
+        return subfields_data
+
+    def _extract_field_info(self, attr_value, cls_id=None) -> Dict[str, Any]:
+        attr_type = attr_value.type
+        name = attr_value.name
+        is_nested = name in self.classes
+        subfields = []
+        if is_nested:
+            subfields = self._get_subfields(attr_type)
+
+        return {
+            'name': name,
+            'type': attr_type.__name__ if hasattr(attr_type, '__name__') else attr_type,
+            'default': cls_id if cls_id and name == 'kind' else None,
+            'is_nested': is_nested,
+            'subfields': subfields,
+        }
