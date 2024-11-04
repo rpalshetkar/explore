@@ -14,6 +14,7 @@ import catalogue
 class Boot:
     factory = attr.ib(factory=lambda: ClassFactory())
     ns = attr.ib(default='boot')
+    # TODO: Hardcoded paths once Env is bootstrapped. Need to figure our fwd reference
     register = attr.ib(factory=lambda: ['env', 'enumeration', 'ds'])
     path = attr.ib(default='xds/catalogue/models')
     models = attr.ib(init=False)
@@ -33,4 +34,5 @@ class Boot:
             self.registry.register(cls.__name__, cls)
 
         ic(f'All classes in factory:{self.factory.classes}')
+        # TODO: Somehow doesn't work in catalogue. Figure out why
         log.info(f'Registered {self.factory.classes} classes')

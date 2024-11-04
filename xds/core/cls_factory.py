@@ -27,6 +27,7 @@ class ClassFactory(metaclass=SingletonMeta):
     def __init__(self, **kwargs: Dict[str, Any]):
         self.inputs = input_dict(**kwargs)
         self.serializer: Converter = self._cls_converter()
+        # TODO: Hardcoded paths once Env is bootstrapped.
         self.py_jtmpl = io_stream(Path('xds/catalogue/templates/classgen.jinja2'))
         self.classes = {}
         self.py = {}
@@ -56,6 +57,9 @@ class ClassFactory(metaclass=SingletonMeta):
         if not isinstance(value, str):
             return {}
         val = value.strip().lower()
+        # TODO: Move this into config or yaml so that metadata could be added on the fly
+        # TODO: Discuss better way to do this and define qualifiers minimalist way
+        # TODO: Can we be used to add some validations as provided via attrs/cattrs
         flags_mapping = [
             (r'/req', 'required', True),
             (r'/int', 'type', 'int'),
@@ -79,6 +83,8 @@ class ClassFactory(metaclass=SingletonMeta):
     def _from_data(self, name: str, data: Dict[str, Any], root: str = '') -> Any:
         attributes = {}
         attributes['context'] = attr.ib(type=Dict[str, Any], default=None)
+        # TODO: More on this to add metadata so that args/url params could be derived
+        # TODO: dynamically
         for key, val in data.items():
             kws = {}
             qualifier = f'{root}.{key}' if root else key
@@ -145,6 +151,14 @@ class ClassFactory(metaclass=SingletonMeta):
         return obj
 
     def cls2py(self, cls_id: str) -> str:
+        # TODO: To create strong statically typed classes
+        # TODO: Need to discuss better way to have members defined in yaml but
+        # TODO: concrete implementations in concrete classes. Like DS members defined in yaml
+        # TODO: but members/methods more unique processing in DS classes
+        # TODO: Separate data model from logical extension to the class
+        # TODO: This is not perfect. Recursive multiple levels doesn't work. Just two
+        # TODO: levels of generation works especially for __init__ function
+        # TODO: Need to figure out better way
         cls = self.classes.get(cls_id)
         if cls is None:
             raise ValueError(f'Class {cls_id} not found.')
