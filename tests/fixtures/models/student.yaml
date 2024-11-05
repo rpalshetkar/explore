@@ -1,15 +1,21 @@
-kind: Student
-sid: str
-email: str
-profile:
-  kind: Profile
-  first_name: str
-  last_name: str
-  courses:
-    - subject: str/req/ro/hide
-      kind: Course
-      professor: str
-  hobbies:
-    - name: str
-      kind: Hobby
-      since: 2000
+kind: University
+name: str
+departments:
+  - name: str
+    kind: Department
+    courses:
+      - title: str
+        kind: Course
+        professor: str
+        students:
+          - sid: str
+            email: str
+            profile:
+              kind: Profile
+              first_name: str
+              last_name: str
+              age: int
+              hobbies:
+                - name: str
+                  kind: Hobby
+                  since: 2000

@@ -1,16 +1,16 @@
 import datetime
 from pathlib import Path
 import re
-from typing import Any, Dict, Optional, List, ClassVar
+from typing import Any, Dict, Optional, List, ClassVar, Set
 from jinja2 import Template
 
 import attr
 from cattrs import Converter
 import cattrs
 from icecream import ic
-from refactor.utils import input_dict, io_stream, read_yaml
+from refactor.utils import input_dict, io_stream, modifier_spec, read_yaml
 
-DYNAMIC_CLASS = 'DynamicClass'
+_DYNAMIC_CLASS = 'DynamicClass'
 
 
 class SingletonMeta(type):
@@ -46,15 +46,16 @@ class ClassFactory(metaclass=SingletonMeta):
         self.py_jtmpl = io_stream(Path('xds/catalogue/templates/classgen.jinja2'))
         self.classes = {}
         self.py = {}
+        self.args: Set[str] = set()
 
     def d2c(self, **kwargs: Dict[str, Any]) -> type:
         data: dict[str, Any] = self._inputs(**kwargs)
-        kind: str = data.get('kind', DYNAMIC_CLASS)
+        kind: str = data.get('kind', _DYNAMIC_CLASS)
         return self._from_data(kind, data)
 
     def _inputs(self, **kwargs: Dict[str, Any]) -> dict[str, Any]:
         data: dict[str, Any] = input_dict(**kwargs)
-        data = self._if_missing_cls(DYNAMIC_CLASS, data)
+        data = self._if_missing_cls(_DYNAMIC_CLASS, data)
         return data
 
     def _if_missing_cls(self, key, data):
@@ -68,43 +69,19 @@ class ClassFactory(metaclass=SingletonMeta):
                 self._if_missing_cls(key, item)
         return data
 
-    def _fld_flags(self, key: str, value: Any) -> Dict[str, Any]:
-        if not isinstance(value, str):
-            return {}
-        val = value.strip().lower()
-        # TODO: Move this into config or yaml so that metadata could be added on the fly
-        # TODO: Discuss better way to do this and define qualifiers minimalist way
-        # TODO: Can we be used to add some validations as provided via attrs/cattrs
-        flags_mapping = [
-            (r'/req', 'required', True),
-            (r'/int', 'type', 'int'),
-            (r'/float', 'type', 'float'),
-            (r'/bool', 'type', 'bool'),
-            (r'/date', 'type', 'date'),
-            (r'/unique', 'unique', True),
-            (r'/key', 'key', True),
-            (r'/default', 'default', True),
-            (r'/ro', 'ro', True),
-            (r'/hide', 'hidden', True),
-        ]
-        flags = {
-            flag: flag_value
-            for pattern, flag, flag_value in flags_mapping
-            if re.search(pattern, val)
-        }
-        flags['testing'] = key.title()
-        return flags
-
     def _from_data(self, name: str, data: Dict[str, Any], root: str = '') -> Any:
         attributes = {}
         attributes['context'] = attr.ib(type=Dict[str, Any], default=None)
         # TODO: More on this to add metadata so that args/url params could be derived
         # TODO: dynamically
         for key, val in data.items():
+            assert (
+                True or key not in self.args
+            ), f'Key {key} already exists. All keys must be unique'
             kws = {}
             qualifier = f'{root}.{key}' if root else key
+            ic(qualifier)
             value = val
-            flags = self._fld_flags(key, value)
             if isinstance(value, str) and re.search(r',', value):
                 value = value.split(',')
             if isinstance(value, dict):
@@ -123,10 +100,15 @@ class ClassFactory(metaclass=SingletonMeta):
                 'annotations': key.title(),
                 'qualifier': qualifier.lower(),
             }
-            kws['metadata'].update(flags)
+            if isinstance(value, str):
+                kws['metadata'].update(modifier_spec(value))
             kws['default'] = None
+            kws['kw_only'] = True
             attributes[key] = attr.ib(**kws)
+            if key not in ['kind']:
+                self.args.add(key)
 
+        ic(attributes)
         dynclass = attr.make_class(name, attributes)
         self.classes[name] = dynclass
         return dynclass
@@ -159,7 +141,7 @@ class ClassFactory(metaclass=SingletonMeta):
 
     def instance(self, **kwargs: Dict[str, Any]) -> Optional[Any]:
         data: dict[str, Any] = self._inputs(**kwargs)
-        kind: str = data.get('kind', DYNAMIC_CLASS)
+        kind: str = data.get('kind', _DYNAMIC_CLASS)
         cls = self.classes.get(kind)
         assert cls is not None, f'Class {kind} not found. Factory not initialized'
         obj = self.serializer.structure(data, cls)
@@ -183,6 +165,10 @@ class ClassFactory(metaclass=SingletonMeta):
         fields_data = [
             self._extract_field_info(attr_value, cls_id) for attr_value in fields
         ]
+
+        for field in fields_data:
+            if field['is_nested']:
+                field['subfields'] = self._get_subfields(field['type'])
 
         py_tmpl = Template(self.py_jtmpl)
         rendered_code = py_tmpl.render(cls_id=cls_id, fields=fields_data)

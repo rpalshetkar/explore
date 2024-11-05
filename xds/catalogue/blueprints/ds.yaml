@@ -1,8 +1,11 @@
 kind: DS
+ns: str/req
 protocol: str
+context: kw
 uri: str
 acl: str
-callable: Callable
+callable:
+  kind: Callable
 memory:
   kind: PandasDS
 http:

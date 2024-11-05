@@ -16,7 +16,7 @@ class Boot:
     ns = attr.ib(default='boot')
     # TODO: Hardcoded paths once Env is bootstrapped. Need to figure our fwd reference
     register = attr.ib(factory=lambda: ['env', 'enumeration', 'ds'])
-    path = attr.ib(default='xds/catalogue/models')
+    path = attr.ib(default='xds/catalogue/blueprints')
     models = attr.ib(init=False)
 
     def __attrs_post_init__(self):

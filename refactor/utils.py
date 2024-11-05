@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import json
 import re
 from typing import Any, Dict, List, Optional, Set, Tuple, TypeAlias
@@ -11,7 +12,14 @@ import pandas as pd
 import yaml
 from icecream import ic
 
-NO_XLATIONS_SPECIALS = ['LOB', 'PL', 'PI']
+_NO_XLATIONS_SPECIALS = ['LOB', 'PL', 'PI']
+
+_MODIFIERS = {
+    'type': '(int|float|bool|list|kw|date|time|dt|email|str|time|uri)(=(.+))?',
+    'flag': '(req|uniq|key|ro|hide)',
+    'op': '(le|ge|gt|lt|eq|max|min|order)=(.+)',
+    'ext': '(in|regex|enum)=(.+)',
+}
 
 XlationMap: TypeAlias = Dict[str, Dict[str, str]]
 ic.configureOutput(prefix='DEBUG: ', includeContext=True)
@@ -35,7 +43,7 @@ def df_pytypes(df: pd.DataFrame) -> Dict[str, str]:
 def xlate(val: str) -> Tuple[str, str]:
     var = re.sub(r'\W+', '_', val).lower()
     arr: List[str] = [
-        i.upper() if i.upper() in NO_XLATIONS_SPECIALS else i.title()
+        i.upper() if i.upper() in _NO_XLATIONS_SPECIALS else i.title()
         for i in var.split('_')
     ]
     eng = ' '.join(arr)
@@ -189,3 +197,44 @@ def pprint_obj(self, obj: Any, indent: int = 2) -> None:
             self.pprint_obj(value, indent + 1)
         else:
             ic(f"{'  ' * indent}{key}: {value}")
+
+
+def modifier_spec(input_str: str) -> Dict[str, Any]:
+    parsed = {}
+    type_map = {
+        'int': int,
+        'float': float,
+        'str': str,
+        'bool': bool,
+        'date': datetime.date,
+        'time': datetime.time,
+        'dt': datetime.datetime,
+        'list': list,
+        'kw': dict,
+    }
+    tokens = input_str.split('/')
+    for token in tokens:
+        for mtype, pattern in _MODIFIERS.items():
+            match = re.match(pattern, token)
+            if not match:
+                continue
+            v1, v2 = [*token.split('=', 1), None][:2]
+            if not v1:
+                continue
+            if mtype == 'type':
+                dtype = type_map.get(v1, str)
+                parsed[mtype] = dtype
+                if v2:
+                    parsed['default'] = dtype(v2)
+            elif mtype == 'flag':
+                parsed[v1] = True
+            elif v2:
+                if mtype == 'op':
+                    parsed[v1] = int(v2)
+                else:
+                    parsed[v1] = v2
+
+    if parsed.get('in'):
+        parsed['in'] = [parsed['type'](i) for i in parsed['in'].split(',')]
+
+    return parsed
