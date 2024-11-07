@@ -1,0 +1,9 @@
+kind: Pipeline
+ns: Joins
+steps:
+  - kind: Callable
+    ns: Replace Headers
+    ds: DS
+    args:
+      find: list
+      replace: dict
