@@ -38,6 +38,46 @@ PFIELDS = {
 PersonDelegate = pydantic_model('PersonDelegate', PFIELDS)
 
 
+def test_dynamic_subclass():
+    BaseUser = create_model(
+        'BaseUser',
+        id=(int, ...),
+        name=(str, 'Jane Doe'),
+    )
+    StudentUser = create_model(
+        'StudentUser', __base__=BaseUser, semester=(int, ...)
+    )
+    student_instance = StudentUser(id=1, name='Alice', semester=2)
+    pp(student_instance)
+
+
+def test_another_way():
+    class A:
+        def __init__(self, delegate_cls, **kwargs):
+            self.delegate = delegate_cls(**kwargs)
+            exports = getattr(self.delegate, 'exports', [])
+            for name in exports:
+                if hasattr(self.delegate, name):
+                    setattr(self, name, getattr(self.delegate, name))
+
+    class Delegate:
+        def __init__(self, name):
+            self.exports = ['name']
+            self.name = name
+
+    a = A(Delegate, name='Alice')
+    print(f'Initial Main: {a.name} Delegate: {a.delegate.name}')
+    a.delegate.name = 'Bob'
+    print(f'Updated on delegate: {a.delegate.name} Main: {a.name}')
+    a.name = 'Charlie'
+    print(f'Updated on main: {a.name} Delegate: {a.delegate.name}')
+
+
+test_another_way()
+test_dynamic_subclass()
+
+"""'
+
 def test_pydantic_model_variations():
     pp(PersonDelegate.model_json_schema())
 
@@ -238,40 +278,4 @@ def test_dynamic_model():
     except ValueError as e:
         print(e)
 
-
-def test_dynamic_subclass():
-    BaseUser = create_model(
-        'BaseUser',
-        id=(int, ...),
-        name=(str, 'Jane Doe'),
-    )
-    StudentUser = create_model(
-        'StudentUser', __base__=BaseUser, semester=(int, ...)
-    )
-    student_instance = StudentUser(id=1, name='Alice', semester=2)
-    pp(student_instance)
-
-
-def test_another_way():
-    class A:
-        def __init__(self, delegate_cls, **kwargs):
-            self.delegate = delegate_cls(**kwargs)
-            exports = getattr(self.delegate, 'exports', [])
-            for name in exports:
-                if hasattr(self.delegate, name):
-                    setattr(self, name, getattr(self.delegate, name))
-
-    class Delegate:
-        def __init__(self, name):
-            self.exports = ['name']
-            self.name = name
-
-    a = A(Delegate, name='Alice')
-    print(f'Initial Main: {a.name} Delegate: {a.delegate.name}')
-    a.delegate.name = 'Bob'
-    print(f'Updated on delegate: {a.delegate.name} Main: {a.name}')
-    a.name = 'Charlie'
-    print(f'Updated on main: {a.name} Delegate: {a.delegate.name}')
-
-
-test_another_way()
+"""
