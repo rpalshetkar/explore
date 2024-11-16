@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple
 
 from icecream import ic
 
@@ -79,3 +79,35 @@ def field_spec(
     if result.get('in'):
         result['in'] = [rtype(i) for i in result['in'].split(',')]
     return result
+
+
+def cmp_value(value1: Any, value2: Any, operator: str) -> bool:
+    operators: Dict[str, Callable[[Any, Any], bool]] = {
+        'eq': lambda x, y: x == y,
+        'ne': lambda x, y: x != y,
+        'gt': lambda x, y: x > y,
+        'lt': lambda x, y: x < y,
+        'ge': lambda x, y: x >= y,
+        'le': lambda x, y: x <= y,
+    }
+
+    if operator not in operators:
+        raise ValueError(f'Invalid operator: {operator}')
+
+    return operators[operator](value1, value2)
+
+
+def query_operation(operation: str, value: Any, collection: List[Any]) -> bool:
+    operations = {
+        'has': lambda v, c: v in c,
+        'end': lambda v, c: c[-1] == v if c else False,
+        'start': lambda v, c: c[0] == v if c else False,
+        'in': lambda v, c: v in c,
+        'enum': lambda v, c: v in c,
+        'range': lambda v, c: all(x >= v[0] and x <= v[1] for x in c),
+    }
+
+    if operation not in operations:
+        raise ValueError(f'Invalid operation: {operation}')
+
+    return operations[operation](value, collection)
